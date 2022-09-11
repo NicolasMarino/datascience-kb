@@ -34,6 +34,7 @@ model = sklearn.linear_model.LinearRegression()
 # Train the model
 model.fit(X, y)
 
+
 # Make a prediction for Uruguay
 X_new = [[15748]] # Uruguay GDP per capita
 print(model.predict(X_new)) # outputs [[ 5.62652284 ]]
