@@ -174,7 +174,101 @@ reviews['index_backwards'] = range(len(reviews), 0, -1)
 
 ```
 
+# Summary Functions and Maps
 
 
+``` python
 
+# Similar to
+
+reviews.points.describe()
+# count    129971.000000
+# mean         88.447138
+#              ...      
+# 75%          91.000000
+# max         100.000000
+# Name: points, Length: 8, dtype: float64
+
+# For string
+reviews.taster_name.describe()
+
+# count         103727
+# unique            19
+# top       Roger Voss
+# freq           25514
+# Name: taster_name, dtype: object
+
+# Get unique names
+reviews.taster_name.unique()
+# Returns an array of strings
+
+# Get counts of every string
+reviews.taster_name.value_counts()
+
+```
+
+## Maps
+
+```python
+# map() is the first, and slightly simpler one. For example, suppose that we wanted to remean the scores the wines received to 0. We can do this as follows:
+
+review_points_mean = reviews.points.mean()
+reviews.points.map(lambda p: p - review_points_mean)
+
+# Faster way
+
+review_points_mean = reviews.points.mean()
+reviews.points - review_points_mean
+
+# Pandas will also understand what to do if we perform these operations between Series of equal length. For example, an easy way of combining country and region information in the dataset would be to do the following:
+
+reviews.country + " - " + reviews.region_1
+# 0            Italy - Etna
+# 1                     NaN
+#                ...       
+# 129969    France - Alsace
+# 129970    France - Alsace
+# Length: 129971, dtype: object
+
+# These operators are faster than map() or apply() because they use speed ups built into pandas. All of the standard Python operators (>, <, ==, and so on) work in this manner.
+
+# However, they are not as flexible as map() or apply(), which can do more advanced things, like applying conditional logic, which cannot be done with addition and subtraction alone.
+
+
+```
+
+### Exercise
+
+```python
+
+# Which wine is the "best bargain"? Create a variable `bargain_wine` with the title of the wine with the highest points-to-price ratio in the dataset.
+
+bargain_idx = (reviews.points / reviews.price).idxmax()
+bargain_wine = reviews.loc[bargain_idx, "title"]
+
+# There are only so many words you can use when describing a bottle of wine. Is a wine more likely to be "tropical" or "fruity"? Create a Series `descriptor_counts` counting how many times each of these two words appears in the `description` column in the dataset. (For simplicity, let's ignore the capitalized versions of these words.)
+n_trop = reviews.description.map(lambda desc: "tropical" in desc).sum()
+n_fruity = reviews.description.map(lambda desc: "fruity" in desc).sum()
+descriptor_counts = pd.Series([n_trop, n_fruity], index=['tropical', 'fruity'])
+
+# We'd like to host these wine reviews on our website, but a rating system ranging from 80 to 100 points is too hard to understand - we'd like to translate them into simple star ratings. A score of 95 or higher counts as 3 stars, a score of at least 85 but less than 95 is 2 stars. Any other score is 1 star.
+
+# Also, the Canadian Vintners Association bought a lot of ads on the site, so any wines from Canada should automatically get 3 stars, regardless of points.
+
+# Create a series `star_ratings` with the number of stars corresponding to each review in the dataset.
+
+def stars(row):
+    if row.country == 'Canada':
+        return 3
+    elif row.points >= 95:
+        return 3
+    elif row.points >= 85:
+        return 2
+    else:
+        return 1
+
+star_ratings = reviews.apply(stars, axis='columns')
+
+
+```
 
