@@ -269,6 +269,209 @@ def stars(row):
 
 star_ratings = reviews.apply(stars, axis='columns')
 
+```
+
+# Grouping and sorting
+
+
+## Groupwise analysis
+
+
+One function we've been using heavily thus far is the value_counts() function. We can replicate what value_counts() does by doing the following:
+
+``` python
+reviews.groupby('points').points.count()
+#We can use any of the summary functions
+reviews.groupby('points').price.min()
+
+# We also can apply lambda functions to each element
+reviews.groupby('winery').apply(lambda df: df.title.iloc[0])
+
+# Get the best wine by country and province
+reviews.groupby(['country', 'province']).apply(lambda df: df.loc[df.points.idxmax()])
+
+# agg()
+# Another groupby() method worth mentioning is agg(), which lets you run a bunch of different functions on your DataFrame simultaneously.
+# For example, we can generate a simple statistical summary of the dataset as follows:
+
+reviews.groupby(['country']).price.agg([len, min, max])
+
 
 ```
 
+## Multi-indexes
+
+``` python
+countries_reviewed = reviews.groupby(['country', 'province']).description.agg([len])
+countries_reviewed
+
+mi = countries_reviewed.index
+type(mi)
+# pandas.core.indexes.multi.MultiIndex
+
+
+## MultiIndex / advanced indexing
+# https://pandas.pydata.org/pandas-docs/stable/user_guide/advanced.html
+
+```
+
+## Sorting
+
+``` python
+countries_reviewed = countries_reviewed.reset_index()
+countries_reviewed.sort_values(by='len')
+
+# sort_values() defaults to an ascending sort, where the lowest values go first. However, most of the time we want a descending sort,  where the higher numbers go first. That goes thusly:
+
+countries_reviewed.sort_values(by='len', ascending=False)
+
+# To sort by index values, use the companion method sort_index().
+countries_reviewed.sort_index()
+
+# Sort by more than one column at a time
+countries_reviewed.sort_values(by=['country', 'len'])
+
+```
+
+## Excercises
+
+``` python
+# get series with one index, and count how many elements.
+reviews_written = reviews.groupby('taster_twitter_handle').size()
+
+# What is the best wine I can buy for a given amount of money? Create a `Series` whose index is wine prices and whose values is the maximum number of points a wine costing that much was given in a review. Sort the values by price, ascending (so that `4.0` dollars is at the top and `3300.0` dollars is at the bottom).
+best_rating_per_price = reviews_written = reviews.groupby('price')['points'].max().sort_index()
+
+# What are the minimum and maximum prices for each `variety` of wine? Create a `DataFrame` whose index is the `variety` category from the dataset and whose values are the `min` and `max` values thereof.
+
+price_extremes = reviews.groupby('variety').price.agg(['min','max'])
+
+# What are the most expensive wine varieties? Create a variable `sorted_varieties` containing a copy of the dataframe from the previous question where varieties are sorted in descending order based on minimum price, then on maximum price (to break ties).
+sorted_varieties = reviews.groupby('variety').price.agg(['min','max']).sort_values(by=['min','max'], ascending=False)
+
+# Create a `Series` whose index is reviewers and whose values is the average review score given out by that reviewer. Hint: you will need the `taster_name` and `points` columns.
+reviewer_mean_ratings = reviews.groupby('taster_name').points.mean()
+
+
+# What combination of countries and varieties are most common? Create a `Series` whose index is a `MultiIndex`of `{country, variety}` pairs. For example, a pinot noir produced in the US should map to `{"US", "Pinot Noir"}`. Sort the values in the `Series` in descending order based on wine count.
+
+country_variety_counts = reviews.groupby(['country', 'variety']).size().sort_values(ascending=False)
+
+```
+
+## Data types and missing values
+
+
+``` python
+
+reviews.price.dtype
+dtype('float64')
+
+# get every column dtype.
+reviews.dtypes
+
+# points column from its existing int64 data type into a float64 data type
+reviews.points.astype('float64')
+
+# A DataFrame or Series index has its own dtype, too:
+reviews.index.dtype
+dtype('int64')
+
+
+```
+
+### Missing data
+
+
+
+``` python
+
+# Get each row which has null country
+reviews[pd.isnull(reviews.country)]
+
+# Fill na with unknow
+reviews.region_2.fillna("Unknown")
+
+# Replace: 
+reviews.taster_twitter_handle.replace("@kerinokeefe", "@kerino")
+
+```
+
+
+#### Excercises
+
+
+``` python
+
+# Sometimes the price column is null. How many reviews in the dataset are missing a price?
+n_missing_prices = pd.isnull(reviews.price).sum()
+
+
+# What are the most common wine-producing regions? Create a Series counting the number of times each value occurs in the `region_1` field. This field is often missing data, so replace missing values with `Unknown`. Sort in descending order.  Your output should look something like this:
+
+reviews.region_1.fillna('Unknown').value_counts().sort_values(ascending=False)
+
+```
+
+
+# Renaming and Combining
+
+## Renaming
+
+``` python
+# Rename column or change index name.
+reviews.rename(columns={'points': 'score'})
+
+# Rename specific indexes
+reviews.rename(index={0: 'firstEntry', 1: 'secondEntry'})
+
+# You'll probably rename columns very often, but rename index values very rarely. For that, set_index() is usually more convenient.
+
+# This creates a new row with index named wines
+reviews.rename_axis("wines", axis='rows').rename_axis("fields", axis='columns')
+
+```
+
+## Combining
+
+
+``` python
+# Pandas has three core methods for doing this. In order of increasing complexity, these are concat(), join(), and merge(). Most of what merge() can do can also be done more simply with join(), so we will omit it and focus on the first two functions here.
+
+## concat()
+# The simplest combining method is concat(). Given a list of elements, this function will smush those elements together along an axis.
+
+canadian_youtube = pd.read_csv("../input/youtube-new/CAvideos.csv")
+british_youtube = pd.read_csv("../input/youtube-new/GBvideos.csv")
+
+pd.concat([canadian_youtube, british_youtube])
+
+
+# join()
+# The middlemost combiner in terms of complexity is join(). join() lets you combine different DataFrame objects which have an index in common.
+
+left = canadian_youtube.set_index(['title', 'trending_date'])
+right = british_youtube.set_index(['title', 'trending_date'])
+
+
+# For example, to pull down videos that happened to be trending on the same day in both Canada and the UK, we could do the following:
+left.join(right, lsuffix='_CAN', rsuffix='_UK')
+## The lsuffix and rsuffix parameters are necessary here because the data has the same column names in both British and Canadian datasets. If this wasn't true (because, say, we'd renamed them beforehand) we wouldn't need them.
+```
+
+
+### Excercises
+
+
+``` python
+
+## Set the index name in the dataset to `wines`.
+reviews.rename_axis('wines', axis='rows')
+
+## Both tables include references to a `MeetID`, a unique key for each meet (competition) included in the database. Using this, generate a dataset combining the two tables into one.
+powerlifting_meets = pd.read_csv("../input/powerlifting-database/meets.csv")
+powerlifting_competitors = pd.read_csv("../input/powerlifting-database/openpowerlifting.csv")
+
+powerlifting_combined = powerlifting_meets.set_index("MeetID").join(powerlifting_competitors.set_index("MeetID"))
+
+```
