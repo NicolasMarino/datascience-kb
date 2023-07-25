@@ -210,3 +210,166 @@ print(mean_absolute_error(val_y, melb_preds))
 # 191669.7536453626
 
 ```
+
+### Create different random forests and evaluate by mean absolute error
+
+``` python
+from sklearn.ensemble import RandomForestRegressor
+
+# Define the models
+model_1 = RandomForestRegressor(n_estimators=50, random_state=0)
+model_2 = RandomForestRegressor(n_estimators=100, random_state=0)
+model_3 = RandomForestRegressor(n_estimators=100, criterion='absolute_error', random_state=0)
+model_4 = RandomForestRegressor(n_estimators=200, min_samples_split=20, random_state=0)
+model_5 = RandomForestRegressor(n_estimators=100, max_depth=7, random_state=0)
+
+models = [model_1, model_2, model_3, model_4, model_5]
+
+from sklearn.metrics import mean_absolute_error
+
+# Function for comparing different models
+def score_model(model, X_t=X_train, X_v=X_valid, y_t=y_train, y_v=y_valid):
+    model.fit(X_t, y_t)
+    preds = model.predict(X_v)
+    return mean_absolute_error(y_v, preds)
+
+for i in range(0, len(models)):
+    mae = score_model(models[i])
+    print("Model %d MAE: %d" % (i+1, mae))
+
+```
+
+
+# Missing values
+
+Using: [Melbourne Housing dataset](!https://www.kaggle.com/datasets/dansbecker/melbourne-housing-snapshot)
+
+## Drop columns with missing values
+
+Just drop every column with some null feature.
+
+## Imputation
+
+Fill missing values with some number, something like mean of that column.
+This won't be exactly right in most cases, but it usually leads to more accurate models than you would get from dropping the column entirely.
+
+## Extension to imputation
+
+In this approach, we impute the missing values, as before. And, additionally, for each column with missing entries in the original dataset, we add a new column that shows the location of the imputed entries.
+
+In some cases, this will meaningfully improve results. In other cases, it doesn't help at all.
+
+![Extension to imputation](img/mv_extension_imputation.jpg)
+
+
+## Validating MAE with different approaches
+
+### Load data and train:
+
+``` python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Load the data
+data = pd.read_csv('../input/melbourne-housing-snapshot/melb_data.csv')
+
+# Select target
+y = data.Price
+
+# To keep things simple, we'll use only numerical predictors
+melb_predictors = data.drop(['Price'], axis=1)
+X = melb_predictors.select_dtypes(exclude=['object'])
+
+# Divide data into training and validation subsets
+X_train, X_valid, y_train, y_valid = train_test_split(X, y, train_size=0.8, test_size=0.2, random_state=0)
+
+```
+
+### Drop columns
+
+``` python
+# Get names of columns with missing values
+cols_with_missing = [col for col in X_train.columns
+                     if X_train[col].isnull().any()]
+
+# Drop columns in training and validation data
+reduced_X_train = X_train.drop(cols_with_missing, axis=1)
+reduced_X_valid = X_valid.drop(cols_with_missing, axis=1)
+
+print("MAE from Approach 1 (Drop columns with missing values):")
+print(score_dataset(reduced_X_train, reduced_X_valid, y_train, y_valid))
+
+```
+
+MAE from Approach 1 (Drop columns with missing values):
+183550.22137772635
+
+### Imputation
+
+``` python
+
+from sklearn.impute import SimpleImputer
+
+# Imputation
+my_imputer = SimpleImputer()
+imputed_X_train = pd.DataFrame(my_imputer.fit_transform(X_train))
+imputed_X_valid = pd.DataFrame(my_imputer.transform(X_valid))
+
+# Imputation removed column names; put them back
+imputed_X_train.columns = X_train.columns
+imputed_X_valid.columns = X_valid.columns
+
+print("MAE from Approach 2 (Imputation):")
+print(score_dataset(imputed_X_train, imputed_X_valid, y_train, y_valid))
+
+```
+MAE from Approach 2 (Imputation):
+178166.46269899711
+
+
+### An extension to imputation
+
+
+``` python
+
+# Make copy to avoid changing original data (when imputing)
+X_train_plus = X_train.copy()
+X_valid_plus = X_valid.copy()
+
+# Make new columns indicating what will be imputed
+for col in cols_with_missing:
+    X_train_plus[col + '_was_missing'] = X_train_plus[col].isnull()
+    X_valid_plus[col + '_was_missing'] = X_valid_plus[col].isnull()
+
+# Imputation
+my_imputer = SimpleImputer()
+imputed_X_train_plus = pd.DataFrame(my_imputer.fit_transform(X_train_plus))
+imputed_X_valid_plus = pd.DataFrame(my_imputer.transform(X_valid_plus))
+
+# Imputation removed column names; put them back
+imputed_X_train_plus.columns = X_train_plus.columns
+imputed_X_valid_plus.columns = X_valid_plus.columns
+
+print("MAE from Approach 3 (An Extension to Imputation):")
+print(score_dataset(imputed_X_train_plus, imputed_X_valid_plus, y_train, y_valid))
+
+
+``` 
+
+MAE from Approach 3 (An Extension to Imputation):
+178927.503183954
+
+## Why did imputation perform better than dropping the columns?
+
+The training data has 10864 rows and 12 columns, where three columns contain missing data. For each column, less than half of the entries are missing. Thus, dropping the columns removes a lot of useful information, and so it makes sense that imputation would perform better.
+
+``` python
+
+# Shape of training data (num_rows, num_columns)
+print(X_train.shape)
+
+# Number of missing values in each column of training data
+missing_val_count_by_column = (X_train.isnull().sum())
+print(missing_val_count_by_column[missing_val_count_by_column > 0])
+
+```
