@@ -1,4 +1,65 @@
-# Your First Machine Learning Model
+# Machine learning
+
+- [Machine learning](#machine-learning)
+  - [First machine learning model](#first-machine-learning-model)
+    - [Prediction target by convention is called Y.](#prediction-target-by-convention-is-called-y)
+    - [Features by convention are called X](#features-by-convention-are-called-x)
+  - [Building Your Model](#building-your-model)
+  - [Model Validation](#model-validation)
+    - [How to split train and test data.](#how-to-split-train-and-test-data)
+- [Underfitting and overfitting](#underfitting-and-overfitting)
+- [Here's the takeaway: Models can suffer from either:](#heres-the-takeaway-models-can-suffer-from-either)
+- [Random Forests](#random-forests)
+    - [Create different random forests and evaluate by mean absolute error](#create-different-random-forests-and-evaluate-by-mean-absolute-error)
+- [Missing values](#missing-values)
+  - [Drop columns with missing values](#drop-columns-with-missing-values)
+  - [Imputation](#imputation)
+  - [Extension to imputation](#extension-to-imputation)
+  - [Validating MAE with different approaches](#validating-mae-with-different-approaches)
+    - [Load data and train:](#load-data-and-train)
+    - [Drop columns](#drop-columns)
+    - [Imputation](#imputation-1)
+    - [An extension to imputation](#an-extension-to-imputation)
+  - [Why did imputation perform better than dropping the columns?](#why-did-imputation-perform-better-than-dropping-the-columns)
+- [Categorical Variables](#categorical-variables)
+  - [Three aproaches](#three-aproaches)
+    - [Drop categorical variables](#drop-categorical-variables)
+    - [Ordinal encoding](#ordinal-encoding)
+    - [One-hot encoding](#one-hot-encoding)
+      - [Validating with different approaches](#validating-with-different-approaches)
+        - [Define Function to Measure Quality of Each Approach](#define-function-to-measure-quality-of-each-approach)
+      - [Score from Approach 1 (Drop Categorical Variables)](#score-from-approach-1-drop-categorical-variables)
+      - [Score from Approach 2 (Ordinal Encoding)](#score-from-approach-2-ordinal-encoding)
+      - [Score from Approach 3 (One-Hot Encoding)](#score-from-approach-3-one-hot-encoding)
+    - [Which approach is best?](#which-approach-is-best)
+    - [Doing actual practice with categorical variables.](#doing-actual-practice-with-categorical-variables)
+    - [Problems with this and ordinal encoding](#problems-with-this-and-ordinal-encoding)
+      - [Posible solution:](#posible-solution)
+      - [Ordinal encoding](#ordinal-encoding-1)
+      - [Get number of unique entries in each column with categorical data](#get-number-of-unique-entries-in-each-column-with-categorical-data)
+    - [What variables can be hot encoded:](#what-variables-can-be-hot-encoded)
+- [Pipelines](#pipelines)
+  - [Example](#example)
+    - [Step 1: Define Preprocessing Steps](#step-1-define-preprocessing-steps)
+    - [Step 2: Define the Model](#step-2-define-the-model)
+    - [Step 3: Create and Evaluate the Pipeline](#step-3-create-and-evaluate-the-pipeline)
+  - [Conclusion](#conclusion)
+- [Cross-Validation](#cross-validation)
+    - [When should you use cross-validation?](#when-should-you-use-cross-validation)
+    - [Example](#example-1)
+    - [Conclusion](#conclusion-1)
+- [XGBoost](#xgboost)
+    - [Example](#example-2)
+  - [Parameter Tuning](#parameter-tuning)
+    - [Conclusion](#conclusion-2)
+- [Data Leakage](#data-leakage)
+  - [Target leakage](#target-leakage)
+  - [Train-Test Contamination](#train-test-contamination)
+    - [Example](#example-3)
+  - [Conclusion](#conclusion-3)
+
+
+## First machine learning model
 
 Tips for panda
 
@@ -389,7 +450,7 @@ The easiest approach to dealing with categorical variables is to simply remove t
 ### Ordinal encoding
 Ordinal encoding assigns each unique value to a different integer.
 
-![ordinal-encoding](../../abstract-images/ordinal-encoding.png)
+![ordinal-encoding](./img/ordinal-encoding.png)
 
 This approach assumes an ordering of the categories: "Never" (0) < "Rarely" (1) < "Most days" (2) < "Every day" (3).
 
@@ -400,7 +461,7 @@ This assumption makes sense in this example, because there is an indisputable ra
 
 One-hot encoding creates new columns indicating the presence (or absence) of each possible value in the original data.
 
-![one-hot-encoding](../../abstract-images/one-hot-encoding.png)
+![one-hot-encoding](./img/one-hot-encoding.png)
 
 In contrast to ordinal encoding, one-hot encoding does not assume an ordering of the categories. Thus, you can expect this approach to work particularly well if there is no clear ordering in the categorical data (e.g., "Red" is neither more nor less than "Yellow"). We refer to categorical variables without an intrinsic ranking as nominal variables.
 
@@ -729,7 +790,7 @@ print('MAE:', score)
 Pipelines are valuable for cleaning up machine learning code and avoiding errors, and are especially useful for workflows with sophisticated data preprocessing.
 
 
-## Cross-Validation
+# Cross-Validation
 
 You will face choices about what predictive variables to use, what types of models to use, what arguments to supply to those models, etc. So far, you have made these choices in a data-driven way by measuring model quality with a validation (or holdout) set.
 
@@ -743,7 +804,7 @@ In cross-validation, we run our modeling process on different subsets of the dat
 
 For example, we could begin by dividing the data into 5 pieces, each 20% of the full dataset. In this case, we say that we have broken the data into 5 "folds".
 
-![Cross validation](../../abstract-images/cross-validation.png)
+![Cross validation](./img/cross-validation.png)
 
 
 Then, we run one experiment for each fold:
@@ -824,3 +885,247 @@ Average MAE score (across experiments):
 
 Using cross-validation yields a much better measure of model quality, with the added benefit of cleaning up our code: note that we no longer need to keep track of separate training and validation sets. So, especially for small datasets, it's a good improvement!
 
+# XGBoost
+
+In this tutorial, you will learn how to build and optimize models with gradient boosting. This method dominates many Kaggle competitions and achieves state-of-the-art results on a variety of datasets.
+
+Gradient boosting is a method that goes through cycles to iteratively add models into an ensemble.
+
+It begins by initializing the ensemble with a single model, whose predictions can be pretty naive. (Even if its predictions are wildly inaccurate, subsequent additions to the ensemble will address those errors.)
+
+Then, we start the cycle:
+
+- First, we use the current ensemble to generate predictions for each observation in the dataset. To make a prediction, we add the predictions from all models in the ensemble.
+- These predictions are used to calculate a loss function (like mean squared error, for instance).
+Then, we use the loss function to fit a new model that will be added to the ensemble. Specifically, we determine model parameters so that adding this new model to the ensemble will reduce the loss. (Side note: The "gradient" in "gradient boosting" refers to the fact that we'll use gradient descent on the loss function to determine the parameters in this new model.)
+- Finally, we add the new model to ensemble, and ...
+- ... repeat!
+
+![Gradient boosting](./img/gradient-boosting.png)
+
+### Example
+
+We begin by loading the training and validation data in X_train, X_valid, y_train, and y_valid.
+
+In this example, you'll work with the XGBoost library. XGBoost stands for extreme gradient boosting, which is an implementation of gradient boosting with several additional features focused on performance and speed. (Scikit-learn has another version of gradient boosting, but XGBoost has some technical advantages.)
+
+In the next code cell, we import the scikit-learn API for XGBoost (xgboost.XGBRegressor). This allows us to build and fit a model just as we would in scikit-learn. As you'll see in the output, the XGBRegressor class has many tunable parameters -- you'll learn about those soon!
+
+``` python
+from xgboost import XGBRegressor
+
+my_model = XGBRegressor()
+my_model.fit(X_train, y_train)
+```
+We also make predictions and evaluate the model.
+
+```python
+from sklearn.metrics import mean_absolute_error
+
+predictions = my_model.predict(X_valid)
+print("Mean Absolute Error: " + str(mean_absolute_error(predictions, y_valid)))
+```
+```
+Mean Absolute Error: 241041.5160392121
+```
+
+## Parameter Tuning
+
+XGBoost has a few parameters that can dramatically affect accuracy and training speed. The first parameters you should understand are:
+
+n_estimators
+n_estimators specifies how many times to go through the modeling cycle described above. It is equal to the number of models that we include in the ensemble.
+
+Too low a value causes underfitting, which leads to inaccurate predictions on both training data and test data.
+Too high a value causes overfitting, which causes accurate predictions on training data, but inaccurate predictions on test data (which is what we care about).
+Typical values range from 100-1000, though this depends a lot on the learning_rate parameter discussed below.
+
+Here is the code to set the number of models in the ensemble:
+
+```python
+my_model = XGBRegressor(n_estimators=500)
+my_model.fit(X_train, y_train)
+```
+
+**early_stopping_rounds**
+
+early_stopping_rounds offers a way to automatically find the ideal value for n_estimators. Early stopping causes the model to stop iterating when the validation score stops improving, even if we aren't at the hard stop for n_estimators. It's smart to set a high value for n_estimators and then use early_stopping_rounds to find the optimal time to stop iterating.
+
+Since random chance sometimes causes a single round where validation scores don't improve, you need to specify a number for how many rounds of straight deterioration to allow before stopping. Setting early_stopping_rounds=5 is a reasonable choice. In this case, we stop after 5 straight rounds of deteriorating validation scores.
+
+When using early_stopping_rounds, you also need to set aside some data for calculating the validation scores - this is done by setting the eval_set parameter.
+
+We can modify the example above to include early stopping:
+
+```python
+my_model = XGBRegressor(n_estimators=500, early_stopping_rounds=5)
+my_model.fit(X_train, y_train, 
+             eval_set=[(X_valid, y_valid)],
+             verbose=False)
+```
+
+If you later want to fit a model with all of your data, set n_estimators to whatever value you found to be optimal when run with early stopping.
+
+learning_rate
+Instead of getting predictions by simply adding up the predictions from each component model, we can multiply the predictions from each model by a small number (known as the learning rate) before adding them in.
+
+This means each tree we add to the ensemble helps us less. So, we can set a higher value for n_estimators without overfitting. If we use early stopping, the appropriate number of trees will be determined automatically.
+
+In general, a small learning rate and large number of estimators will yield more accurate XGBoost models, though it will also take the model longer to train since it does more iterations through the cycle. As default, XGBoost sets learning_rate=0.1.
+
+Modifying the example above to change the learning rate yields the following code:
+
+
+
+``` python
+my_model = XGBRegressor(n_estimators=1000, learning_rate=0.05)
+my_model.fit(X_train, y_train, 
+             early_stopping_rounds=5, 
+             eval_set=[(X_valid, y_valid)], 
+             verbose=False)
+
+```
+
+**n_jobs**
+
+On larger datasets where runtime is a consideration, you can use parallelism to build your models faster. It's common to set the parameter n_jobs equal to the number of cores on your machine. On smaller datasets, this won't help.
+
+The resulting model won't be any better, so micro-optimizing for fitting time is typically nothing but a distraction. But, it's useful in large datasets where you would otherwise spend a long time waiting during the fit command.
+
+Here's the modified example:
+
+``` python
+my_model = XGBRegressor(n_estimators=1000, learning_rate=0.05, n_jobs=4)
+my_model.fit(X_train, y_train, 
+             early_stopping_rounds=5, 
+             eval_set=[(X_valid, y_valid)], 
+             verbose=False)
+```
+
+### Conclusion
+
+XGBoost is a leading software library for working with standard tabular data (the type of data you store in Pandas DataFrames, as opposed to more exotic types of data like images and videos). With careful parameter tuning, you can train highly accurate models.
+
+
+# Data Leakage
+
+Data leakage (or leakage) happens when your training data contains information about the target, but similar data will not be available when the model is used for prediction. This leads to high performance on the training set (and possibly even the validation data), but the model will perform poorly in production.
+
+In other words, leakage causes a model to look accurate until you start making decisions with the model, and then the model becomes very inaccurate.
+
+There are two main types of leakage: target leakage and train-test contamination.
+
+## Target leakage
+
+Target leakage occurs when your predictors include data that will not be available at the time you make predictions. It is important to think about target leakage in terms of the timing or chronological order that data becomes available, not merely whether a feature helps make good predictions.
+
+An example will be helpful. Imagine you want to predict who will get sick with pneumonia. The top few rows of your raw data look like this:
+
+![target-leakage-1](./img/target-leakage-1.png)
+
+People take antibiotic medicines after getting pneumonia in order to recover. The raw data shows a strong relationship between those columns, but took_antibiotic_medicine is frequently changed after the value for got_pneumonia is determined. This is target leakage.
+
+The model would see that anyone who has a value of False for took_antibiotic_medicine didn't have pneumonia. Since validation data comes from the same source as training data, the pattern will repeat itself in validation, and the model will have great validation (or cross-validation) scores.
+
+But the model will be very inaccurate when subsequently deployed in the real world, because even patients who will get pneumonia won't have received antibiotics yet when we need to make predictions about their future health.
+
+To prevent this type of data leakage, any variable updated (or created) after the target value is realized should be excluded.
+
+## Train-Test Contamination
+
+A different type of leak occurs when you aren't careful to distinguish training data from validation data.
+
+Recall that validation is meant to be a measure of how the model does on data that it hasn't considered before. You can corrupt this process in subtle ways if the validation data affects the preprocessing behavior. This is sometimes called train-test contamination.
+
+For example, imagine you run preprocessing (like fitting an imputer for missing values) before calling train_test_split(). The end result? Your model may get good validation scores, giving you great confidence in it, but perform poorly when you deploy it to make decisions.
+
+After all, you incorporated data from the validation or test data into how you make predictions, so the may do well on that particular data even if it can't generalize to new data. This problem becomes even more subtle (and more dangerous) when you do more complex feature engineering.
+
+If your validation is based on a simple train-test split, exclude the validation data from any type of fitting, including the fitting of preprocessing steps. This is easier if you use scikit-learn pipelines. When using cross-validation, it's even more critical that you do your preprocessing inside the pipeline!
+
+### Example
+
+In this example, you will learn one way to detect and remove target leakage.
+
+We will use a dataset about credit card applications and skip the basic data set-up code. The end result is that information about each credit card application is stored in a DataFrame X. We'll use it to predict which applications were accepted in a Series y.
+
+Number of rows in the dataset: 1319
+
+![Data leakage](./img/data-leakage.png)
+
+Since this is a small dataset, we will use cross-validation to ensure accurate measures of model quality.
+
+
+``` python
+from sklearn.pipeline import make_pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
+
+# Since there is no preprocessing, we don't need a pipeline (used anyway as best practice!)
+my_pipeline = make_pipeline(RandomForestClassifier(n_estimators=100))
+cv_scores = cross_val_score(my_pipeline, X, y, 
+                            cv=5,
+                            scoring='accuracy')
+
+print("Cross-validation accuracy: %f" % cv_scores.mean())
+```
+```
+Cross-validation accuracy: 0.981052
+```
+
+
+With experience, you'll find that it's very rare to find models that are accurate 98% of the time. It happens, but it's uncommon enough that we should inspect the data more closely for target leakage.
+
+Here is a summary of the data, which you can also find under the data tab:
+
+- **card**: 1 if credit card application accepted, 0 if not
+- **reports**: Number of major derogatory reports
+- **age**: Age n years plus twelfths of a year
+- **income**: Yearly income (divided by 10,000)
+- **share**: Ratio of monthly credit card expenditure to yearly income
+- **expenditure**: Average monthly credit card expenditure
+- **owner**: 1 if owns home, 0 if rents
+- **selfempl**: 1 if self-employed, 0 if not
+- **dependents**: 1 + number of dependents
+- **months**: Months living at current address
+- **majorcards**: Number of major credit cards held
+- **active**: Number of active credit accounts
+A few variables look suspicious. For example, does expenditure mean expenditure on this card or on cards used before applying?
+
+At this point, basic data comparisons can be very helpful:
+
+
+```python
+expenditures_cardholders = X.expenditure[y]
+expenditures_noncardholders = X.expenditure[~y]
+
+print('Fraction of those who did not receive a card and had no expenditures: %.2f' \
+      %((expenditures_noncardholders == 0).mean()))
+print('Fraction of those who received a card and had no expenditures: %.2f' \
+      %(( expenditures_cardholders == 0).mean()))
+```
+```
+Fraction of those who did not receive a card and had no expenditures: 1.00
+Fraction of those who received a card and had no expenditures: 0.02
+```
+As shown above, everyone who did not receive a card had no expenditures, while only 2% of those who received a card had no expenditures. It's not surprising that our model appeared to have a high accuracy. But this also seems to be a case of target leakage, where expenditures probably means expenditures on the card they applied for.
+
+Since share is partially determined by expenditure, it should be excluded too. The variables active and majorcards are a little less clear, but from the description, they sound concerning. In most situations, it's better to be safe than sorry if you can't track down the people who created the data to find out more.
+
+We would run a model without target leakage as follows:
+```
+# Drop leaky predictors from dataset
+potential_leaks = ['expenditure', 'share', 'active', 'majorcards']
+X2 = X.drop(potential_leaks, axis=1)
+
+# Evaluate the model with leaky predictors removed
+cv_scores = cross_val_score(my_pipeline, X2, y, 
+                            cv=5,
+                            scoring='accuracy')
+
+print("Cross-val accuracy: %f" % cv_scores.mean())
+```
+This accuracy is quite a bit lower, which might be disappointing. However, we can expect it to be right about 80% of the time when used on new applications, whereas the leaky model would likely do much worse than that (in spite of its higher apparent score in cross-validation).
+
+## Conclusion
+Data leakage can be multi-million dollar mistake in many data science applications. Careful separation of training and validation data can prevent train-test contamination, and pipelines can help implement this separation. Likewise, a combination of caution, common sense, and data exploration can help identify target leakage.
