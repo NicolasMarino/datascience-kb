@@ -57,6 +57,11 @@
   - [Train-Test Contamination](#train-test-contamination)
     - [Example](#example-3)
   - [Conclusion](#conclusion-3)
+- [Data cleaning](#data-cleaning)
+  - [Scaling and Normalization](#scaling-and-normalization)
+    - [Scaling vs. Normalization: What's the difference?](#scaling-vs-normalization-whats-the-difference)
+      - [Scaling](#scaling)
+      - [Normalization](#normalization)
 
 
 ## First machine learning model
@@ -1129,3 +1134,69 @@ This accuracy is quite a bit lower, which might be disappointing. However, we ca
 
 ## Conclusion
 Data leakage can be multi-million dollar mistake in many data science applications. Careful separation of training and validation data can prevent train-test contamination, and pipelines can help implement this separation. Likewise, a combination of caution, common sense, and data exploration can help identify target leakage.
+
+
+# Data cleaning
+
+## Scaling and Normalization
+
+### Scaling vs. Normalization: What's the difference?
+
+One of the reasons that it's easy to get confused between scaling and normalization is because the terms are sometimes used interchangeably and, to make it even more confusing, they are very similar! In both cases, you're transforming the values of numeric variables so that the transformed data points have specific helpful properties. The difference is that:
+
+- scaling:
+  - Changing the range of your data.
+- normalization:
+  - Changing the shape of the distribution of your data.
+
+#### Scaling
+
+This means that you're transforming your data so that it fits within a specific scale, like 0-100 or 0-1. You want to scale data when you're using methods based on measures of how far apart data points are, like **support vector machines (SVM) or **k-nearest neighbors** (KNN)**. With these algorithms, a change of "1" in any numeric feature is given the same importance.
+
+For example, you might be looking at the prices of some products in both Yen and US Dollars. One US Dollar is worth about 100 Yen, but if you don't scale your prices, methods like SVM or KNN will consider a difference in price of 1 Yen as important as a difference of 1 US Dollar! This clearly doesn't fit with our intuitions of the world. With currency, you can convert between currencies. But what about if you're looking at something like height and weight? It's not entirely clear how many pounds should equal one inch (or how many kilograms should equal one meter).
+
+By scaling your variables, you can help compare different variables on equal footing. To help solidify what scaling looks like, let's look at a made-up example. (Don't worry, we'll work with real data in the following exercise!)
+
+``` python
+# generate 1000 data points randomly drawn from an exponential distribution
+original_data = np.random.exponential(size=1000)
+
+# mix-max scale the data between 0 and 1
+scaled_data = minmax_scaling(original_data, columns=[0])
+
+# plot both together to compare
+fig, ax = plt.subplots(1, 2, figsize=(15, 3))
+sns.histplot(original_data, ax=ax[0], kde=True, legend=False)
+ax[0].set_title("Original Data")
+sns.histplot(scaled_data, ax=ax[1], kde=True, legend=False)
+ax[1].set_title("Scaled data")
+plt.show()
+```
+![Scaling data](./img/dc-scaling.png)
+
+Notice that the shape of the data doesn't change, but that instead of ranging from 0 to 8ish, it now ranges from 0 to 1.
+
+#### Normalization
+
+Scaling just changes the range of your data. Normalization is a more radical transformation. The point of normalization is to change your observations so that they can be described as a normal distribution.
+
+[Normal distribution](https://en.wikipedia.org/wiki/Normal_distribution): Also known as the "bell curve", this is a specific statistical distribution where a roughly equal observations fall above and below the mean, the mean and the median are the same, and there are more observations closer to the mean. The normal distribution is also known as the Gaussian distribution.
+
+In general, you'll normalize your data if you're going to be using a machine learning or statistics technique that assumes your data is normally distributed. Some examples of these include linear discriminant analysis (LDA) and Gaussian naive Bayes. (Pro tip: any method with "Gaussian" in the name probably assumes normality.)
+
+The method we're using to normalize here is called the [Box-Cox Transformation](https://en.wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation). Let's take a quick peek at what normalizing some data looks like:
+
+``` python
+# normalize the exponential data with boxcox
+normalized_data = stats.boxcox(original_data)
+
+# plot both together to compare
+fig, ax=plt.subplots(1, 2, figsize=(15, 3))
+sns.histplot(original_data, ax=ax[0], kde=True, legend=False)
+ax[0].set_title("Original Data")
+sns.histplot(normalized_data[0], ax=ax[1], kde=True, legend=False)
+ax[1].set_title("Normalized data")
+plt.show()
+```
+
+![Normalization](./img/dc-normalization.png)
