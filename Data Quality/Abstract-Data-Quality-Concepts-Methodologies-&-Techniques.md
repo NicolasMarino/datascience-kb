@@ -11,8 +11,8 @@
         - [with null values with CWA](#with-null-values-with-cwa)
     - [Time related dimensions: Currency timeliness and Volatility](#time-related-dimensions-currency-timeliness-and-volatility)
       - [Possible metrics:](#possible-metrics)
-    - [Time dimensions](#time-dimensions)
     - [Consistency](#consistency)
+      - [Integrity constraints](#integrity-constraints)
     - [Evoluition of information toward networked web based niformation systems.](#evoluition-of-information-toward-networked-web-based-niformation-systems)
     - [Brief description of correctness, minimality, completeness, pertinence, readability and normalization.](#brief-description-of-correctness-minimality-completeness-pertinence-readability-and-normalization)
 
@@ -106,13 +106,30 @@ All are between 0-1.
 #### Possible metrics:
 
 - Currency
+  - last update metadata.
 - Volatility
+  - Length of time that data remain valid.
 - Timeliness
-- 
-
-### Time dimensions
+  - Data not only are current but also in time for event that correspond to their usage, a currency measurement and a check that data are available before the planned usage time.
+- More complex metrics:
+  - One that threee dimensions are linked by defining timeliness as a function of currency and volatility.
+  - Currency = age + (DeliveryTime - InputTime)
+  - where age measures how old the data unit is when recived DeliveryTime is the time the information product is delivered to the customer and InputTime is the time that data unit is obtained.
+  - timeliness is defined as;
+    - max 0,1 minus currency/volatility.
+    - Ranges from 0- to 1 where 0 means bad timeliness...
+    - Relevance of currency depends on volatility: data that are highly volatile must be current, while currency is less important for data with low volatility.
 
 ### Consistency
+
+Captures the violtion of semantic rules defined over a set of data items.
+Reference to relational theory integrity constraints are an instantiation of such semantic rules. In statistics data edits are another example of semantic rules that allow for the checking of consistency.
+
+#### Integrity constraints
+
+
+
+
 
 ### Evoluition of information toward networked web based niformation systems.
 
