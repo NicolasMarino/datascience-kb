@@ -13,6 +13,10 @@
       - [Possible metrics:](#possible-metrics)
     - [Consistency](#consistency)
       - [Integrity constraints](#integrity-constraints)
+          - [Data edits](#data-edits)
+    - [Other Data Quality dimensions](#other-data-quality-dimensions)
+    - [Accesibility](#accesibility)
+    - [Quality information sources](#quality-information-sources)
     - [Evoluition of information toward networked web based niformation systems.](#evoluition-of-information-toward-networked-web-based-niformation-systems)
     - [Brief description of correctness, minimality, completeness, pertinence, readability and normalization.](#brief-description-of-correctness-minimality-completeness-pertinence-readability-and-normalization)
 
@@ -127,9 +131,82 @@ Reference to relational theory integrity constraints are an instantiation of suc
 
 #### Integrity constraints
 
+Are typically defined on shcemas, they can at the same time be checked on a specific instance of te schema that presently represents the extension fo the database.
+
+Main types:
+- Key dependency
+  - Evit duplicates
+- Inclusion dependency aka referencial constraint
+  - foreign key si an example of 
+- Functional dependeny
+  - Given a relationl instance r, let x and y be two nonempty set of atttributes in r. r stisfies the functional dependney X -> Y, if the follwing holds for every pair of tuples, t1 and t2 in r:
+  - if t1.X = t2.X then t1.Y = t2.Y
 
 
+###### Data edits
 
+
+In non relational data we can define consistency rules.Is defineda s tehtask of detecting inconsistencies by formulatingruyles that muste be respected by every correct set of answers.
+chuch rules are expressed as edits which denote error conditions.
+
+example
+
+marital status = ''marrried'', age = ''5 years old''
+
+Rule is to detect this kind of errors could be the following:
+
+If maritial status is married, age must be not be less than 14.
+
+The act of correcting erroneous fields by restoring correct values is called imputation.
+Problem is called *edit-imputation* problem. More info in chapter 4.
+
+### Other Data Quality dimensions
+
+
+There are so many new data pipelines and we have more information now than ever.
+Is it dificult to controll everything.
+
+But one thing is important, and that is interpretability.
+
+To maximize interpretability following type of documentation should be available.
+
+1. schema fo files or dataases
+2. integrity constraints
+3. metadata for cross domain information
+4. certificate describing available mesures of data quality dimensions and shcema dimensions
+5. history and provenance of data, where created produced and maintained.
+Sychronization between different time series concerns proper integration of data 
+
+### Accesibility
+
+World Wide Web Consortium defined the individual disabilities.
+- may be not be able to see, hear, move or process some types of information easility or at all;
+- may have difficulty reading or comprenhending text;
+- may not have to or be able to use a keyboard or mouse;
+- may have a text-only screen, a small screen or a slow internet connection;
+- may not speak or understand a natural language fluently.
+
+In order to be more accesible:
+- avoid use of color as the only means to express semantics, helping daltopnic people appreciate meaning of data
+- clear natural language by providing expansions of acronyms improving readability a frequent use of plain terms;
+- design a web site that ensure device independance using features that enable activation of page element via variety of input devices;
+- provide context and orientation information to help users understand complex pages or elements.
+
+### Quality information sources
+
+Wang and Strong to know dimensions how trustable is the information source providing the data.
+
+- Believability
+  - considers whether a certain source provides data that can be regarded as true, real and creible.
+- Reputation
+  - How trustable is the information source
+- Objectivity
+  - impartially of sources in data provisioning.
+  
+- Reliability
+  - Whether a source provides data conveying the right information.
+
+This takes a lot of importance in peer to peer connection, if one peer is giving bad information an error could be introduced. More info about this trust issues in chapter 9.
 
 ### Evoluition of information toward networked web based niformation systems.
 
