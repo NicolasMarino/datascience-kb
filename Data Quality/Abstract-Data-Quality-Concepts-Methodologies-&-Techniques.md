@@ -17,6 +17,7 @@
     - [Other Data Quality dimensions](#other-data-quality-dimensions)
     - [Accesibility](#accesibility)
     - [Quality information sources](#quality-information-sources)
+    - [Approaches to the definition of Data Quality](#approaches-to-the-definition-of-data-quality)
     - [Evoluition of information toward networked web based niformation systems.](#evoluition-of-information-toward-networked-web-based-niformation-systems)
     - [Brief description of correctness, minimality, completeness, pertinence, readability and normalization.](#brief-description-of-correctness-minimality-completeness-pertinence-readability-and-normalization)
 
@@ -207,6 +208,39 @@ Wang and Strong to know dimensions how trustable is the information source provi
   - Whether a source provides data conveying the right information.
 
 This takes a lot of importance in peer to peer connection, if one peer is giving bad information an error could be introduced. More info about this trust issues in chapter 9.
+
+### Approaches to the definition of Data Quality
+
+
+From different points of view, you may have theoretical (Wand and Wang), Empirical (Wang and strong) and intuitive (Redman).
+
+- Theoretical
+  - Considers:
+    - Information system **IS** as a representation of a real-world system **RW**.
+      - 1 a N relation from RW to IS.
+  - We may have design differences:
+    - Incomplete representation
+      - One rw does not have an is
+    - Ambiguous representation
+      - 2 rw to 1 IS
+    - Meaningless states
+      - 1 IS is alone w no RW.
+- Empirical
+  - Intrinsic 
+    - capturing the data quality that data has on its own. Accuracy is aquality dimension that is intrinsic to data.
+  - contextual
+    - considers the conntext where data are used. completeness dimension.
+  - representational 
+    - quality of data representation eg interpretability
+  - accesibility
+    - to a further non-functional property of data access, namely the level of security
+- Intuitive
+  - conceptual schema
+  - data values
+    - accuracy, completeness, currency, consistency.
+  - data format
+    - Appropiateness, interpretability, portability, format precision, format flexibility, ability to represent nul values, efficient use of memory, representation consistency.
+
 
 ### Evoluition of information toward networked web based niformation systems.
 
