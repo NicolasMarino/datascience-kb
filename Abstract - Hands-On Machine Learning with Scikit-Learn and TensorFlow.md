@@ -236,7 +236,20 @@ Top course:
             - Cost function → Tipically used in linear regression problems.
                 - How bad your model is.
             
-            Feed ir your training examples and finds the parameters thaat make the linear model fit best to your data. → *This is called training the model.*
+            You feed it your training examples and finds the parameters that make the linear model fit best to your data. → *This is called training the model.* Optimal parameteers values are: θ0 = 4.85 and θ1 = 4.91 × 10–5
+
+            ![alt text](./abstract-images/best-fit-linear-model.png)
+
             
     - .
--
+# Main challenges of Machine Learning
+
+
+Bad algorithm
+Bad data
+
+## Insufficient Quantity of Training Data
+
+
+
+[]
